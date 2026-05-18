@@ -4,6 +4,8 @@ import com.notifications.dto.request.EmailRequest;
 import com.notifications.dto.response.EmailResponse;
 import com.notifications.exception.exceptionClasses.MailSendingException;
 import com.notifications.exception.exceptionClasses.SenderMailIdException;
+import com.notifications.mapper.EmailDataMapper;
+import com.notifications.repository.EmailRepository;
 import com.notifications.service.EmailNotificationService;
 import com.notifications.template.RegistrationEmailTemplate;
 import jakarta.mail.internet.MimeMessage;
@@ -15,17 +17,25 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EmailNotificationServiceImpl implements EmailNotificationService {
+
     private final Environment environment;
     private final JavaMailSender mailer;
     EmailResponse response=new EmailResponse();
-    public EmailNotificationServiceImpl(Environment environment, JavaMailSender mailer){
+    EmailRepository repository;
+    String senderMailId;
+    String emailContent;
+
+    public EmailNotificationServiceImpl(Environment environment, JavaMailSender mailer,
+                                        EmailRepository repository){
         this.environment=environment;
         this.mailer=mailer;
+        this.repository = repository;
     }
+
     @Override
     public EmailResponse sendEmail(EmailRequest request){
         try{
-            String senderMailId=environment.getProperty("sender-email");
+            senderMailId=environment.getProperty("sender-email");
             MimeMessage message=mailer.createMimeMessage();
             MimeMessageHelper messageHelper=new MimeMessageHelper(message);
             messageHelper.setTo(request.getEmailId());
@@ -38,21 +48,27 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
                 throw new MailSendingException("Sender mailId can't be empty!...");
             else if(request.getEmailId() == null)
                 throw new MailSendingException("Receiver mailId can't be empty!...");
+            emailContent = RegistrationEmailTemplate.generateRegistrationEmailTemplate(
+                    request.getUserName(), request.getEmailId(), request.getVerificationUrl()
+            );
 
             messageHelper.setFrom(senderMailId);
             messageHelper.setSubject(request.getEmailSubject());
-            messageHelper.setText(RegistrationEmailTemplate.generateRegistrationEmailTemplate(
-                    request.getUserName(), request.getEmailId(), request.getVerificationUrl()
-            ));
+            messageHelper.setText(emailContent);
             mailer.send(message);
+
             response.setStatusCode(HttpStatus.OK.toString());
-            response.setEmailStatus("Success");
+            response.setEmailStatus("SUCCESS");
             response.setEmailMessage("Registration Email send successfully!...");
         }catch (Exception exception){
+            response.setStatusCode(HttpStatus.OK.toString());
+            response.setEmailStatus("FAILED");
+            response.setEmailMessage("[Registration Email sending unsuccessful];{exception.getMessage()}");
             throw new SenderMailIdException("[EmailNotificationService]-{Ex}:- "+exception.getMessage());
+        }finally {
+            repository.save(EmailDataMapper.mapToEmailEntity(request, senderMailId, emailContent,
+                    response.getEmailStatus(), response.getEmailMessage()));
         }
-
-
         return response;
     }
 }

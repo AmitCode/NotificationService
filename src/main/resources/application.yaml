@@ -1,8 +1,8 @@
 spring:
   application:
     name: NotificationService
-  profile:
-    active : mysqlDB1.yaml
+  profiles:
+    active: mysqlDB1
   mail:
     host : smtp.gmail.com
     port : 587
