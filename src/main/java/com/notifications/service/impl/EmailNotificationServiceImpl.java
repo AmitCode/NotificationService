@@ -38,6 +38,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
             senderMailId=environment.getProperty("sender-email");
             MimeMessage message=mailer.createMimeMessage();
             MimeMessageHelper messageHelper=new MimeMessageHelper(message);
+            System.out.println(request.getEmailId());
             messageHelper.setTo(request.getEmailId());
             //assert senderMailId != null;This will throw assertion error in case of null, but in a
             // production ready system:
