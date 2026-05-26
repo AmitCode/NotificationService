@@ -1,6 +1,5 @@
 package com.notifications.exception;
 
-import com.notifications.dto.response.EmailResponse;
 import com.notifications.dto.response.NotificationServiceExceptionResponse;
 import com.notifications.exception.exceptionClasses.SenderMailIdException;
 import org.springframework.http.HttpStatus;

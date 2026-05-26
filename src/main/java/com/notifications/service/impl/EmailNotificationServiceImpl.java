@@ -7,6 +7,7 @@ import com.notifications.exception.exceptionClasses.SenderMailIdException;
 import com.notifications.mapper.EmailDataMapper;
 import com.notifications.repository.EmailRepository;
 import com.notifications.service.EmailNotificationService;
+import com.notifications.template.PasswordVerificationEmailTemplate;
 import com.notifications.template.RegistrationEmailTemplate;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.core.env.Environment;
@@ -49,9 +50,16 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
                 throw new MailSendingException("Sender mailId can't be empty!...");
             else if(request.getEmailId() == null)
                 throw new MailSendingException("Receiver mailId can't be empty!...");
-            emailContent = RegistrationEmailTemplate.generateRegistrationEmailTemplate(
-                    request.getUserName(), request.getEmailId(), request.getVerificationUrl()
-            );
+
+            if(request.getEmailType().equalsIgnoreCase("REG")){
+                emailContent = RegistrationEmailTemplate.generateRegistrationEmailTemplate(
+                        request.getUserName(), request.getEmailId(), request.getVerificationUrl(),
+                        request.getTokenDuration());
+
+            }else if(request.getEmailType().equalsIgnoreCase("PASS-RESET")){
+                emailContent = PasswordVerificationEmailTemplate.generatePasswordResetEmailTemplate(
+                        request.getVerificationUrl(), request.getTokenDuration());
+            }
 
             messageHelper.setFrom(senderMailId);
             messageHelper.setSubject(request.getEmailSubject());
