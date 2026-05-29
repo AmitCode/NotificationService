@@ -17,6 +17,7 @@ public class Emails {
     private String recipientEmailId;
     private String emailSubject;
     private String verificationUrl;
+    @Column(length = 2000)
     private String emailBody;
     private String status;
     private String statusMessage;

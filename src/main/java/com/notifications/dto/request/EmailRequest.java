@@ -16,4 +16,5 @@ public class EmailRequest {
     private String emailSubject;
     private String verificationUrl;
     private String tokenDuration;
+    private String emailToken;
 }

@@ -7,6 +7,7 @@ import com.notifications.exception.exceptionClasses.SenderMailIdException;
 import com.notifications.mapper.EmailDataMapper;
 import com.notifications.repository.EmailRepository;
 import com.notifications.service.EmailNotificationService;
+import com.notifications.template.OtpVerificationEmailTemplate;
 import com.notifications.template.PasswordVerificationEmailTemplate;
 import com.notifications.template.RegistrationEmailTemplate;
 import jakarta.mail.internet.MimeMessage;
@@ -59,11 +60,14 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
             }else if(request.getEmailType().equalsIgnoreCase("PASS-RESET")){
                 emailContent = PasswordVerificationEmailTemplate.generatePasswordResetEmailTemplate(
                         request.getVerificationUrl(), request.getTokenDuration());
+            }else if(request.getEmailType().equalsIgnoreCase("OTP_VERIFICATION")){
+                emailContent = OtpVerificationEmailTemplate.getOtpVerificationMailTemplate(
+                        request.getEmailToken());
             }
 
             messageHelper.setFrom(senderMailId);
             messageHelper.setSubject(request.getEmailSubject());
-            messageHelper.setText(emailContent);
+            messageHelper.setText(emailContent, true);
             mailer.send(message);
 
             response.setStatusCode(HttpStatus.OK.toString());
